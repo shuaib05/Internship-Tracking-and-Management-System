@@ -52,6 +52,20 @@ def role_required(role):
         return decorated_function
     return decorator
 
+def roles_accepted(*roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'user_id' not in session:
+                flash('Please log in first.', 'warning')
+                return redirect(url_for('login'))
+            if session.get('role') not in roles:
+                flash('You do not have permission to access that page.', 'error')
+                return redirect(url_for('home'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 @app.route('/')
 def home():
     """Redirect to login page."""
@@ -509,6 +523,67 @@ def admin_application_update(id):
     except Exception as e:
         flash(f'Database error: {str(e)}', 'error')
     return redirect(url_for('admin_applications'))
+
+@app.route('/reports')
+@roles_accepted('admin', 'faculty')
+def reports():
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            # 1. Applications by Department
+            cursor.execute("""
+                SELECT d.DepartmentName, COUNT(a.ApplicationID) as count 
+                FROM Department d 
+                LEFT JOIN Student s ON d.DepartmentID = s.DepartmentID 
+                LEFT JOIN Application a ON s.StudentID = a.StudentID 
+                GROUP BY d.DepartmentID, d.DepartmentName
+                ORDER BY count DESC
+            """)
+            apps_by_dept = cursor.fetchall()
+            
+            # 2. Applications by Company
+            cursor.execute("""
+                SELECT c.CompanyName, COUNT(a.ApplicationID) as count 
+                FROM Company c 
+                LEFT JOIN Internship i ON c.CompanyID = i.CompanyID 
+                LEFT JOIN Application a ON i.InternshipID = a.InternshipID 
+                GROUP BY c.CompanyID, c.CompanyName
+                ORDER BY count DESC
+            """)
+            apps_by_company = cursor.fetchall()
+            
+            # 3. Acceptance rate
+            cursor.execute("SELECT COUNT(*) as c FROM Application")
+            total_apps = cursor.fetchone()['c']
+            cursor.execute("SELECT COUNT(*) as c FROM Application WHERE Status = 'Accepted'")
+            accepted_apps = cursor.fetchone()['c']
+            
+            acceptance_rate = 0
+            if total_apps > 0:
+                acceptance_rate = round((accepted_apps / total_apps) * 100, 2)
+                
+            # 4. Top 5 Internships
+            cursor.execute("""
+                SELECT i.Title, c.CompanyName, COUNT(a.ApplicationID) as count 
+                FROM Internship i 
+                JOIN Company c ON i.CompanyID = c.CompanyID 
+                LEFT JOIN Application a ON i.InternshipID = a.InternshipID 
+                GROUP BY i.InternshipID, i.Title, c.CompanyName
+                ORDER BY count DESC
+                LIMIT 5
+            """)
+            top_internships = cursor.fetchall()
+        conn.close()
+        
+        return render_template('reports.html', 
+                               apps_by_dept=apps_by_dept,
+                               apps_by_company=apps_by_company,
+                               acceptance_rate=acceptance_rate,
+                               total_apps=total_apps,
+                               top_internships=top_internships)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('home'))
 
 if __name__ == '__main__':
     # Start the Flask development server on port 5000
