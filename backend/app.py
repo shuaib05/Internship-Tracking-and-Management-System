@@ -1,4 +1,5 @@
 import os
+import pymysql
 from flask import Flask, render_template
 
 # Configure to serve the frontend folder
@@ -11,9 +12,20 @@ app = Flask(
     static_url_path=''
 )
 
-# TODO: MySQL Database Connection
-# You can set up the DB connection here using mysql-connector-python or SQLAlchemy
-# Example: DB config from environment variables (use dotenv in the future)
+# Configure MySQL Database Connection
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'localhost')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'root')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', '')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'itms_db')
+
+def get_db_connection():
+    return pymysql.connect(
+        host=app.config['MYSQL_HOST'],
+        user=app.config['MYSQL_USER'],
+        password=app.config['MYSQL_PASSWORD'],
+        database=app.config['MYSQL_DB'],
+        cursorclass=pymysql.cursors.DictCursor
+    )
 
 @app.route('/')
 def home():
