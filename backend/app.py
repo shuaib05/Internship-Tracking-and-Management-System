@@ -218,7 +218,235 @@ def faculty_dashboard():
 @app.route('/admin/dashboard')
 @role_required('admin')
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    stats = {'students': 0, 'internships': 0, 'applications': 0, 'pending': 0}
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) as c FROM Student")
+            stats['students'] = cursor.fetchone()['c']
+            cursor.execute("SELECT COUNT(*) as c FROM Internship")
+            stats['internships'] = cursor.fetchone()['c']
+            cursor.execute("SELECT COUNT(*) as c FROM Application")
+            stats['applications'] = cursor.fetchone()['c']
+            cursor.execute("SELECT COUNT(*) as c FROM Application WHERE Status = 'Pending'")
+            stats['pending'] = cursor.fetchone()['c']
+        conn.close()
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    return render_template('admin_dashboard.html', stats=stats)
+
+@app.route('/admin/companies', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_companies():
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            name = request.form.get('company_name')
+            email = request.form.get('contact_email')
+            location = request.form.get('location')
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO Company (CompanyName, ContactEmail, Location) 
+                    VALUES (%s, %s, %s)
+                """, (name, email, location))
+            conn.commit()
+            flash('Company added successfully!', 'success')
+            return redirect(url_for('admin_companies'))
+
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Company")
+            companies = cursor.fetchall()
+        conn.close()
+        return render_template('admin_companies.html', companies=companies)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/companies/edit/<int:id>', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_company_edit(id):
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            name = request.form.get('company_name')
+            email = request.form.get('contact_email')
+            location = request.form.get('location')
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE Company SET CompanyName=%s, ContactEmail=%s, Location=%s 
+                    WHERE CompanyID=%s
+                """, (name, email, location, id))
+            conn.commit()
+            flash('Company updated successfully!', 'success')
+            return redirect(url_for('admin_companies'))
+            
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Company WHERE CompanyID=%s", (id,))
+            company = cursor.fetchone()
+        conn.close()
+        if not company:
+            flash('Company not found', 'error')
+            return redirect(url_for('admin_companies'))
+        return render_template('admin_company_edit.html', company=company)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_companies'))
+
+@app.route('/admin/companies/delete/<int:id>', methods=['POST'])
+@role_required('admin')
+def admin_company_delete(id):
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM Company WHERE CompanyID=%s", (id,))
+        conn.commit()
+        conn.close()
+        flash('Company deleted successfully!', 'success')
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    return redirect(url_for('admin_companies'))
+
+@app.route('/admin/internships', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_internships():
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            title = request.form.get('title')
+            duration = request.form.get('duration')
+            stipend = request.form.get('stipend')
+            company_id = request.form.get('company_id')
+            faculty_id = request.form.get('faculty_id')
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO Internship (Title, Duration, Stipend, CompanyID, FacultyID) 
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (title, duration, stipend, company_id, faculty_id))
+            conn.commit()
+            flash('Internship added successfully!', 'success')
+            return redirect(url_for('admin_internships'))
+
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT i.*, c.CompanyName, f.FacultyName 
+                FROM Internship i 
+                LEFT JOIN Company c ON i.CompanyID = c.CompanyID
+                LEFT JOIN Faculty f ON i.FacultyID = f.FacultyID
+            """)
+            internships = cursor.fetchall()
+            
+            cursor.execute("SELECT * FROM Company")
+            companies = cursor.fetchall()
+            cursor.execute("SELECT * FROM Faculty")
+            faculties = cursor.fetchall()
+        conn.close()
+        return render_template('admin_internships.html', internships=internships, companies=companies, faculties=faculties)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/internships/edit/<int:id>', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_internship_edit(id):
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            title = request.form.get('title')
+            duration = request.form.get('duration')
+            stipend = request.form.get('stipend')
+            company_id = request.form.get('company_id')
+            faculty_id = request.form.get('faculty_id')
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE Internship SET Title=%s, Duration=%s, Stipend=%s, CompanyID=%s, FacultyID=%s 
+                    WHERE InternshipID=%s
+                """, (title, duration, stipend, company_id, faculty_id, id))
+            conn.commit()
+            flash('Internship updated successfully!', 'success')
+            return redirect(url_for('admin_internships'))
+            
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Internship WHERE InternshipID=%s", (id,))
+            internship = cursor.fetchone()
+            cursor.execute("SELECT * FROM Company")
+            companies = cursor.fetchall()
+            cursor.execute("SELECT * FROM Faculty")
+            faculties = cursor.fetchall()
+        conn.close()
+        return render_template('admin_internship_edit.html', internship=internship, companies=companies, faculties=faculties)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_internships'))
+
+@app.route('/admin/internships/delete/<int:id>', methods=['POST'])
+@role_required('admin')
+def admin_internship_delete(id):
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM Internship WHERE InternshipID=%s", (id,))
+        conn.commit()
+        conn.close()
+        flash('Internship deleted successfully!', 'success')
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    return redirect(url_for('admin_internships'))
+
+@app.route('/admin/students')
+@role_required('admin')
+def admin_students():
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT s.*, d.DepartmentName 
+                FROM Student s 
+                LEFT JOIN Department d ON s.DepartmentID = d.DepartmentID
+            """)
+            students = cursor.fetchall()
+        conn.close()
+        return render_template('admin_students.html', students=students)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/applications')
+@role_required('admin')
+def admin_applications():
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT a.*, s.Name, i.Title 
+                FROM Application a 
+                JOIN Student s ON a.StudentID = s.StudentID 
+                JOIN Internship i ON a.InternshipID = i.InternshipID
+                ORDER BY a.DateApplied DESC
+            """)
+            applications = cursor.fetchall()
+        conn.close()
+        return render_template('admin_applications.html', applications=applications)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/applications/update/<int:id>', methods=['POST'])
+@role_required('admin')
+def admin_application_update(id):
+    try:
+        status = request.form.get('status')
+        if status in ['Pending', 'Accepted', 'Rejected']:
+            conn = get_db_connection()
+            with conn.cursor() as cursor:
+                cursor.execute("UPDATE Application SET Status=%s WHERE ApplicationID=%s", (status, id))
+            conn.commit()
+            conn.close()
+            flash('Application status updated!', 'success')
+        else:
+            flash('Invalid status selected.', 'error')
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    return redirect(url_for('admin_applications'))
 
 if __name__ == '__main__':
     # Start the Flask development server on port 5000

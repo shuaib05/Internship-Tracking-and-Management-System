@@ -5,19 +5,52 @@
     <title>Admin Dashboard - ITMS</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-        .logout-btn { background: #ef4444; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
-        .logout-btn:hover { background: #dc2626; }
+        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
+        .nav-links a { background: #3b82f6; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; margin-left: 10px; font-size: 14px; }
+        .nav-links a.logout-btn { background: #ef4444; }
+        .nav-links a:hover { opacity: 0.9; }
+        
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; }
+        .card { background: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center; border-top: 4px solid #3b82f6; }
+        .card.pending { border-top-color: #f59e0b; }
+        .card.success { border-top-color: #10b981; }
+        .card h3 { margin: 0; font-size: 1rem; color: #64748b; }
+        .card .num { font-size: 2.5rem; font-weight: bold; color: #1e293b; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>Admin Dashboard</h2>
-            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            <h2>ITMS Admin Control Panel</h2>
+            <div class="nav-links">
+                <a href="{{ url_for('admin_students') }}">Students</a>
+                <a href="{{ url_for('admin_companies') }}">Companies</a>
+                <a href="{{ url_for('admin_internships') }}">Internships</a>
+                <a href="{{ url_for('admin_applications') }}">Applications</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
         </div>
-        <p>Welcome to your Administrator Portal! Your content will appear here.</p>
+        
+        <h3>System Overview</h3>
+        <div class="grid">
+            <div class="card">
+                <h3>Total Students</h3>
+                <div class="num">{{ stats.students }}</div>
+            </div>
+            <div class="card">
+                <h3>Available Internships</h3>
+                <div class="num">{{ stats.internships }}</div>
+            </div>
+            <div class="card success">
+                <h3>Total Applications</h3>
+                <div class="num">{{ stats.applications }}</div>
+            </div>
+            <div class="card pending">
+                <h3>Pending Review</h3>
+                <div class="num">{{ stats.pending }}</div>
+            </div>
+        </div>
     </div>
 </body>
 </html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Companies - ITMS</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
+        .back-btn { background: #94a3b8; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; }
+        .btn { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; color: white; font-weight: bold; text-decoration: none; font-size: 13px; margin-right: 5px; }
+        .btn-edit { background: #3b82f6; }
+        .btn-delete { background: #ef4444; }
+        .btn-add { background: #10b981; margin-bottom: 20px; font-size: 15px; }
+        .flash { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .flash.success { background: #dcfce7; color: #166534; }
+        .flash.error { background: #fee2e2; color: #991b1b; }
+        .add-form { background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 30px; border: 1px solid #e2e8f0; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Manage Companies</h2>
+            <a href="{{ url_for('admin_dashboard') }}" class="back-btn">Back to Dashboard</a>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Company Name</th>
+                    <th>Contact Email</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for company in companies %}
+                <tr>
+                    <td>{{ company.CompanyID }}</td>
+                    <td>{{ company.CompanyName }}</td>
+                    <td>{{ company.ContactEmail }}</td>
+                    <td>{{ company.Location }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_company_edit', id=company.CompanyID) }}" class="btn btn-edit">Edit</a>
+                        <form method="POST" action="{{ url_for('admin_company_delete', id=company.CompanyID) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this company? All associated internships will be removed.');">
+                            <button type="submit" class="btn btn-delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No companies found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="add-form">
+            <h3>Add New Company</h3>
+            <form method="POST" action="{{ url_for('admin_companies') }}">
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input type="text" name="company_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email</label>
+                    <input type="email" name="contact_email" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" name="location">
+                </div>
+                <button type="submit" class="btn btn-add">Add Company</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
