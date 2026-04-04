@@ -1,56 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Applicant Tracking - ITMS</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
-        .back-btn { background: #94a3b8; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        th { background: #f1f5f9; }
-        
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: bold; text-align: center;}
-        .status-badge.pending { background: #fef3c7; color: #92400e; }
-        .status-badge.accepted { background: #dcfce7; color: #166534; }
-        .status-badge.rejected { background: #fee2e2; color: #991b1b; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Applicant Tracking List</h2>
-            <a href="{{ url_for('faculty_dashboard') }}" class="back-btn">Back to Portal</a>
-        </div>
+{% extends 'base.html' %}
+{% block title %}Applicant Tracking - ITMS{% endblock %}
+{% block content %}
+<div class="header">
+    <h2>Applicant Tracking List</h2>
+    <a href="{{ url_for('faculty_dashboard') }}" class="btn btn-secondary">Back to Portal</a>
+</div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Date Applied</th>
-                    <th>Student Name</th>
-                    <th>Department</th>
-                    <th>Target Internship</th>
-                    <th>Current Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>{{ app.DateApplied }}</td>
-                    <td><b>{{ app.Name }}</b></td>
-                    <td>{{ app.DepartmentName or 'N/A' }}</td>
-                    <td>{{ app.Title }}</td>
-                    <td>
-                        <span class="status-badge {{ app.Status|lower }}">{{ app.Status }}</span>
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="5">No applications submitted to any of your monitored hubs.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>Date Applied</th>
+                <th>Student Name</th>
+                <th>Department</th>
+                <th>Target Internship</th>
+                <th>Current Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td>{{ app.DateApplied }}</td>
+                <td><strong>{{ app.Name }}</strong></td>
+                <td>{{ app.DepartmentName or 'N/A' }}</td>
+                <td>{{ app.Title }}</td>
+                <td>
+                    <span class="pill {{ app.Status|lower }}">{{ app.Status }}</span>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">No applications submitted to any of your monitored hubs.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

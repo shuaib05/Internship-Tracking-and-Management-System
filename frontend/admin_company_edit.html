@@ -1,42 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Company - ITMS</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
-        .back-btn { background: #94a3b8; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
-        .btn-edit { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; font-size: 15px; width: 100%; margin-top: 10px; }
-        .btn-edit:hover { background: #2563eb; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Edit Company</h2>
-            <a href="{{ url_for('admin_companies') }}" class="back-btn">Cancel</a>
-        </div>
+{% extends 'base.html' %}
+{% block title %}Edit Company - ITMS{% endblock %}
+{% block content %}
+<div class="header">
+    <h2>Edit Company</h2>
+    <a href="{{ url_for('admin_companies') }}" class="btn btn-secondary">Cancel</a>
+</div>
 
-        <form method="POST" action="{{ url_for('admin_company_edit', id=company.CompanyID) }}">
-            <div class="form-group">
-                <label>Company Name</label>
-                <input type="text" name="company_name" value="{{ company.CompanyName }}" required>
-            </div>
-            <div class="form-group">
-                <label>Contact Email</label>
-                <input type="email" name="contact_email" value="{{ company.ContactEmail }}" required>
-            </div>
-            <div class="form-group">
-                <label>Location</label>
-                <input type="text" name="location" value="{{ company.Location }}">
-            </div>
-            <button type="submit" class="btn-edit">Save Changes</button>
-        </form>
-    </div>
-</body>
-</html>
+<div class="form-panel" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" action="{{ url_for('admin_company_edit', id=company.CompanyID) }}">
+        <div class="form-group">
+            <label>Company Name</label>
+            <input type="text" name="company_name" value="{{ company.CompanyName }}" required>
+        </div>
+        <div class="form-group">
+            <label>Contact Email</label>
+            <input type="email" name="contact_email" value="{{ company.ContactEmail }}" required>
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" name="location" value="{{ company.Location }}">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

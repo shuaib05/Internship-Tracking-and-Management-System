@@ -90,6 +90,7 @@ def login():
                 session['user_id'] = user['UserID']
                 session['role'] = user['Role']
                 session['ref_id'] = user['RefID']
+                session['username'] = user['Username']
                 
                 if user['Role'] == 'student':
                     return redirect(url_for('student_dashboard'))

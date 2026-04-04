@@ -1,112 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Manage Internships - ITMS</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 20px; }
-        .back-btn { background: #94a3b8; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        th { background: #f1f5f9; }
-        .btn { padding: 6px 12px; border-radius: 4px; border: none; cursor: pointer; color: white; font-weight: bold; text-decoration: none; font-size: 13px; margin-right: 5px; }
-        .btn-edit { background: #3b82f6; }
-        .btn-delete { background: #ef4444; }
-        .btn-add { background: #10b981; margin-bottom: 20px; font-size: 15px; }
-        .flash { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
-        .flash.success { background: #dcfce7; color: #166534; }
-        .flash.error { background: #fee2e2; color: #991b1b; }
-        .add-form { background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 30px; border: 1px solid #e2e8f0; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>Manage Internships</h2>
-            <a href="{{ url_for('admin_dashboard') }}" class="back-btn">Back to Dashboard</a>
-        </div>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="flash {{ category }}">{{ message }}</div>
+{% extends 'base.html' %}
+{% block title %}Manage Internships - ITMS{% endblock %}
+{% block content %}
+<div class="header">
+    <h2>Manage Internships</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Faculty Lead</th>
+                <th>Duration</th>
+                <th>Stipend</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in internships %}
+            <tr>
+                <td><strong>{{ item.Title }}</strong></td>
+                <td>{{ item.CompanyName }}</td>
+                <td>{{ item.FacultyName }}</td>
+                <td>{{ item.Duration }}</td>
+                <td>${{ item.Stipend }}</td>
+                <td style="white-space: nowrap;">
+                    <a href="{{ url_for('admin_internship_edit', id=item.InternshipID) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 13px;">Edit</a>
+                    <form method="POST" action="{{ url_for('admin_internship_delete', id=item.InternshipID) }}" style="display:inline;" onsubmit="return confirm('Delete this internship? All associated applications will also be deleted.');">
+                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 13px;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No internships defined.</td></tr>
             {% endfor %}
-          {% endif %}
-        {% endwith %}
+        </tbody>
+    </table>
+</div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Company</th>
-                    <th>Faculty Lead</th>
-                    <th>Duration</th>
-                    <th>Stipend</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in internships %}
-                <tr>
-                    <td>{{ item.Title }}</td>
-                    <td>{{ item.CompanyName }}</td>
-                    <td>{{ item.FacultyName }}</td>
-                    <td>{{ item.Duration }}</td>
-                    <td>${{ item.Stipend }}</td>
-                    <td>
-                        <a href="{{ url_for('admin_internship_edit', id=item.InternshipID) }}" class="btn btn-edit">Edit</a>
-                        <form method="POST" action="{{ url_for('admin_internship_delete', id=item.InternshipID) }}" style="display:inline;" onsubmit="return confirm('Delete this internship? All associated applications will also be deleted.');">
-                            <button type="submit" class="btn btn-delete">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="6">No internships defined.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="add-form">
-            <h3>Post New Internship</h3>
-            <form method="POST" action="{{ url_for('admin_internships') }}">
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label>Duration (e.g. '3 Months')</label>
-                    <input type="text" name="duration">
-                </div>
-                <div class="form-group">
-                    <label>Stipend (Numbers only)</label>
-                    <input type="number" step="0.01" name="stipend">
-                </div>
-                <div class="form-group">
-                    <label>Company</label>
-                    <select name="company_id" required>
-                        <option value="">Select Company...</option>
-                        {% for comp in companies %}
-                        <option value="{{ comp.CompanyID }}">{{ comp.CompanyName }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Assigned Faculty</label>
-                    <select name="faculty_id" required>
-                        <option value="">Select Faculty...</option>
-                        {% for fac in faculties %}
-                        <option value="{{ fac.FacultyID }}">{{ fac.FacultyName }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-add">Create Internship</button>
-            </form>
+<div class="form-panel">
+    <h3>Post New Internship</h3>
+    <form method="POST" action="{{ url_for('admin_internships') }}">
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" name="title" required>
         </div>
-    </div>
-</body>
-</html>
+        <div class="form-group">
+            <label>Duration (e.g. '3 Months')</label>
+            <input type="text" name="duration">
+        </div>
+        <div class="form-group">
+            <label>Stipend (Numbers only)</label>
+            <input type="number" step="0.01" name="stipend">
+        </div>
+        <div class="form-group">
+            <label>Company</label>
+            <select name="company_id" required>
+                <option value="">Select Company...</option>
+                {% for comp in companies %}
+                <option value="{{ comp.CompanyID }}">{{ comp.CompanyName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Assigned Faculty</label>
+            <select name="faculty_id" required>
+                <option value="">Select Faculty...</option>
+                {% for fac in faculties %}
+                <option value="{{ fac.FacultyID }}">{{ fac.FacultyName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success" style="width: 100%; padding: 12px; font-size: 16px;">Create Internship</button>
+    </form>
+</div>
+{% endblock %}

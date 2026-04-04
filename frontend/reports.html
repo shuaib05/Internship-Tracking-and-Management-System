@@ -1,95 +1,74 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Global Reports - ITMS</title>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1100px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
-        .back-btn { background: #94a3b8; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
-        .back-btn:hover { background: #64748b; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .full-width { grid-column: span 2; }
-        .report-card { background: #f1f5f9; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .report-card.alert { background: #e0e7ff; border-color: #818cf8; text-align: center; }
-        .report-card h3 { margin-top: 0; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 15px; }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #cbd5e1; font-size: 14px; }
-        th { color: #475569; }
-        
-        .metric-value { font-size: 2.5rem; font-weight: bold; color: #4f46e5; margin: 10px 0; }
-        .metric-sub { font-size: 14px; color: #64748b; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>ITMS System Reports</h2>
-            <a href="javascript:history.back()" class="back-btn">Go Back</a>
-        </div>
-        
-        <div class="grid">
-            <div class="report-card alert full-width">
-                <h3>Global Pipeline Acceptance Rate</h3>
-                <div class="metric-value">{{ acceptance_rate }}%</div>
-                <div class="metric-sub">Based on {{ total_apps }} total applications recorded platform-wide.</div>
-            </div>
+{% extends 'base.html' %}
+{% block title %}Global Reports - ITMS{% endblock %}
+{% block content %}
+<div class="header">
+    <h2>ITMS System Reports</h2>
+    <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+</div>
 
-            <div class="report-card">
-                <h3>Applications Yield by Department</h3>
-                <table>
-                    <thead>
-                        <tr><th>Department Name</th><th>Total Submissions</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for dept in apps_by_dept %}
-                        <tr>
-                            <td>{{ dept.DepartmentName }}</td>
-                            <td><b>{{ dept.count }}</b></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+<div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="card" style="grid-column: span 2; border-top-color: var(--success); background: #f0fdf4;">
+        <h3>Global Pipeline Acceptance Rate</h3>
+        <div class="num" style="color: var(--success); margin: 15px 0;">{{ acceptance_rate }}%</div>
+        <div style="color: var(--text-light); font-size: 14px;">Based on {{ total_apps }} total applications recorded platform-wide.</div>
+    </div>
 
-            <div class="report-card">
-                <h3>Company Traction</h3>
-                <table>
-                    <thead>
-                        <tr><th>Corporate Partner</th><th>Inbound Applicants</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for company in apps_by_company %}
-                        <tr>
-                            <td>{{ company.CompanyName }}</td>
-                            <td><b>{{ company.count }}</b></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="report-card full-width">
-                <h3>Top 5 Most Popular Internships</h3>
-                <table>
-                    <thead>
-                        <tr><th>Internship Title</th><th>Company Partner</th><th>Total Footprint</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for internship in top_internships %}
-                        <tr>
-                            <td><b>{{ internship.Title }}</b></td>
-                            <td>{{ internship.CompanyName }}</td>
-                            <td>{{ internship.count }} Applicants</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    <div class="form-panel">
+        <h3 style="border-bottom: 2px solid var(--border); padding-bottom: 10px;">Applications Yield by Department</h3>
+        <div class="table-responsive" style="margin-top: 15px;">
+            <table>
+                <thead>
+                    <tr><th>Department Name</th><th>Total Submissions</th></tr>
+                </thead>
+                <tbody>
+                    {% for dept in apps_by_dept %}
+                    <tr>
+                        <td>{{ dept.DepartmentName }}</td>
+                        <td><strong>{{ dept.count }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="form-panel">
+        <h3 style="border-bottom: 2px solid var(--border); padding-bottom: 10px;">Company Traction</h3>
+        <div class="table-responsive" style="margin-top: 15px;">
+            <table>
+                <thead>
+                    <tr><th>Corporate Partner</th><th>Inbound Applicants</th></tr>
+                </thead>
+                <tbody>
+                    {% for company in apps_by_company %}
+                    <tr>
+                        <td>{{ company.CompanyName }}</td>
+                        <td><strong>{{ company.count }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="form-panel" style="grid-column: span 2;">
+        <h3 style="border-bottom: 2px solid var(--border); padding-bottom: 10px;">Top 5 Most Popular Internships</h3>
+        <div class="table-responsive" style="margin-top: 15px;">
+            <table>
+                <thead>
+                    <tr><th>Internship Title</th><th>Company Partner</th><th>Total Footprint</th></tr>
+                </thead>
+                <tbody>
+                    {% for internship in top_internships %}
+                    <tr>
+                        <td><strong>{{ internship.Title }}</strong></td>
+                        <td>{{ internship.CompanyName }}</td>
+                        <td><span class="badge">{{ internship.count }} Applicants</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -89,4 +89,5 @@ INSERT INTO Users (Username, Password, Role, RefID) VALUES
 ('alice_s', 'password', 'student', 1),
 ('bob_j', 'password', 'student', 2),
 ('alan_t', 'password', 'faculty', 1),
-('ada_l', 'password', 'faculty', 2);
+('ada_l', 'password', 'faculty', 2),
+('charlie_b', 'password', 'student', 3);
