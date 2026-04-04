@@ -7,17 +7,42 @@
         body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-        .logout-btn { background: #ef4444; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
+        .nav-links a, .logout-btn { background: #2563eb; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; margin-left: 10px; }
+        .logout-btn { background: #ef4444; }
+        .nav-links a:hover { background: #1d4ed8; }
         .logout-btn:hover { background: #dc2626; }
+        .dashboard-content { margin-top: 30px; }
+        .stat-box { display: inline-block; background: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center; min-width: 200px; }
+        .stat-num { font-size: 2rem; font-weight: bold; color: #2563eb; }
+        .actions { margin-top: 30px; }
+        .btn { display: inline-block; padding: 10px 20px; background: #10b981; color: white; border-radius: 5px; text-decoration: none; font-weight: bold; }
+        .btn:hover { background: #059669; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h2>Student Dashboard</h2>
-            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            <div class="nav-links">
+                <a href="{{ url_for('student_profile') }}">My Profile</a>
+                <a href="{{ url_for('student_applications') }}">My Applications</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
         </div>
-        <p>Welcome to your Student Portal! Your content will appear here.</p>
+        
+        <div class="dashboard-content">
+            <h3>Welcome to your ITMS Student Portal!</h3>
+            <p>Here you can browse available internships and track your submitted applications.</p>
+            
+            <div class="stat-box">
+                <div class="stat-num">{{ application_count }}</div>
+                <div>Applications Submitted</div>
+            </div>
+            
+            <div class="actions">
+                <a href="{{ url_for('student_internships') }}" class="btn">Browse Internships</a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

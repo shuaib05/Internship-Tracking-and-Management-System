@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Available Internships - ITMS</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+        .back-btn { background: #94a3b8; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
+        .back-btn:hover { background: #64748b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: #475569; font-weight: bold; }
+        .apply-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .apply-btn:hover { background: #059669; }
+        .flash { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .flash.success { background: #dcfce7; color: #166534; }
+        .flash.warning { background: #fef9c3; color: #854d0e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Available Internships</h2>
+            <a href="{{ url_for('student_dashboard') }}" class="back-btn">Back to Dashboard</a>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Company</th>
+                    <th>Duration</th>
+                    <th>Stipend</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for internship in internships %}
+                <tr>
+                    <td>{{ internship.Title }}</td>
+                    <td>{{ internship.CompanyName }}</td>
+                    <td>{{ internship.Duration }}</td>
+                    <td>${{ internship.Stipend }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('student_apply', internship_id=internship.InternshipID) }}" style="margin:0;">
+                            <button type="submit" class="apply-btn">Apply</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">No internships available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

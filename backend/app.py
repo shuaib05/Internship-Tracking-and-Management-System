@@ -99,7 +99,116 @@ def logout():
 @app.route('/student/dashboard')
 @role_required('student')
 def student_dashboard():
-    return render_template('student_dashboard.html')
+    student_id = session.get('ref_id')
+    application_count = 0
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) as count FROM Application WHERE StudentID = %s", (student_id,))
+            result = cursor.fetchone()
+            if result:
+                application_count = result['count']
+        conn.close()
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        
+    return render_template('student_dashboard.html', application_count=application_count)
+
+@app.route('/student/profile', methods=['GET', 'POST'])
+@role_required('student')
+def student_profile():
+    student_id = session.get('ref_id')
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            name = request.form.get('name')
+            email = request.form.get('email')
+            phone = request.form.get('phone')
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE Student SET Name = %s, Email = %s, Phone = %s 
+                    WHERE StudentID = %s
+                """, (name, email, phone, student_id))
+            conn.commit()
+            flash('Profile updated successfully!', 'success')
+            
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Student WHERE StudentID = %s", (student_id,))
+            student = cursor.fetchone()
+        conn.close()
+        return render_template('student_profile.html', student=student)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('student_dashboard'))
+
+@app.route('/student/internships')
+@role_required('student')
+def student_internships():
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT i.*, c.CompanyName 
+                FROM Internship i 
+                JOIN Company c ON i.CompanyID = c.CompanyID
+            """)
+            internships = cursor.fetchall()
+        conn.close()
+        return render_template('student_internships.html', internships=internships)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('student_dashboard'))
+
+@app.route('/student/apply/<int:internship_id>', methods=['POST'])
+@role_required('student')
+def student_apply(internship_id):
+    student_id = session.get('ref_id')
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            # Check for duplicates
+            cursor.execute("""
+                SELECT * FROM Application 
+                WHERE StudentID = %s AND InternshipID = %s
+            """, (student_id, internship_id))
+            existing = cursor.fetchone()
+            
+            if existing:
+                flash('You have already applied for this internship!', 'warning')
+            else:
+                cursor.execute("""
+                    INSERT INTO Application (DateApplied, Status, StudentID, InternshipID) 
+                    VALUES (CURDATE(), 'Pending', %s, %s)
+                """, (student_id, internship_id))
+                conn.commit()
+                flash('Application submitted successfully!', 'success')
+        conn.close()
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    
+    return redirect(url_for('student_internships'))
+
+@app.route('/student/applications')
+@role_required('student')
+def student_applications():
+    student_id = session.get('ref_id')
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT a.DateApplied, a.Status, i.Title, c.CompanyName 
+                FROM Application a 
+                JOIN Internship i ON a.InternshipID = i.InternshipID 
+                JOIN Company c ON i.CompanyID = c.CompanyID 
+                WHERE a.StudentID = %s
+                ORDER BY a.DateApplied DESC
+            """, (student_id,))
+            applications = cursor.fetchall()
+        conn.close()
+        return render_template('student_applications.html', applications=applications)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('student_dashboard'))
 
 @app.route('/faculty/dashboard')
 @role_required('faculty')
