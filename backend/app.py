@@ -54,8 +54,8 @@ def role_required(role):
 
 @app.route('/')
 def home():
-    """Serve the homepage."""
-    return render_template('index.html')
+    """Redirect to login page."""
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
