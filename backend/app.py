@@ -213,7 +213,69 @@ def student_applications():
 @app.route('/faculty/dashboard')
 @role_required('faculty')
 def faculty_dashboard():
-    return render_template('faculty_dashboard.html')
+    faculty_id = session.get('ref_id')
+    stats = {'internships': 0, 'applications': 0}
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) as c FROM Internship WHERE FacultyID = %s", (faculty_id,))
+            stats['internships'] = cursor.fetchone()['c']
+            
+            cursor.execute("""
+                SELECT COUNT(a.ApplicationID) as c 
+                FROM Application a 
+                JOIN Internship i ON a.InternshipID = i.InternshipID 
+                WHERE i.FacultyID = %s
+            """, (faculty_id,))
+            stats['applications'] = cursor.fetchone()['c']
+        conn.close()
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    return render_template('faculty_dashboard.html', stats=stats)
+
+@app.route('/faculty/applications')
+@role_required('faculty')
+def faculty_applications():
+    faculty_id = session.get('ref_id')
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT a.DateApplied, a.Status, s.Name, d.DepartmentName, i.Title 
+                FROM Application a 
+                JOIN Student s ON a.StudentID = s.StudentID 
+                LEFT JOIN Department d ON s.DepartmentID = d.DepartmentID 
+                JOIN Internship i ON a.InternshipID = i.InternshipID 
+                WHERE i.FacultyID = %s
+                ORDER BY a.DateApplied DESC
+            """, (faculty_id,))
+            applications = cursor.fetchall()
+        conn.close()
+        return render_template('faculty_applications.html', applications=applications)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('faculty_dashboard'))
+
+@app.route('/faculty/internships')
+@role_required('faculty')
+def faculty_internships():
+    faculty_id = session.get('ref_id')
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT i.Title, i.Duration, i.Stipend, c.CompanyName, 
+                       (SELECT COUNT(*) FROM Application a WHERE a.InternshipID = i.InternshipID) as ApplicantCount
+                FROM Internship i 
+                JOIN Company c ON i.CompanyID = c.CompanyID
+                WHERE i.FacultyID = %s
+            """, (faculty_id,))
+            internships = cursor.fetchall()
+        conn.close()
+        return render_template('faculty_internships.html', internships=internships)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('faculty_dashboard'))
 
 @app.route('/admin/dashboard')
 @role_required('admin')

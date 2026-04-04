@@ -85,7 +85,8 @@ INSERT INTO Application (DateApplied, Status, StudentID, InternshipID) VALUES
 ('2024-03-10', 'Pending', 1, 2);
 
 INSERT INTO Users (Username, Password, Role, RefID) VALUES
-('admin1', 'hashed_pass', 'admin', NULL),
-('alice_s', 'hashed_pass', 'student', 1),
-('bob_j', 'hashed_pass', 'student', 2),
-('alan_t', 'hashed_pass', 'faculty', 1);
+('admin1', 'password', 'admin', NULL),
+('alice_s', 'password', 'student', 1),
+('bob_j', 'password', 'student', 2),
+('alan_t', 'password', 'faculty', 1),
+('ada_l', 'password', 'faculty', 2);

@@ -1,23 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Faculty Dashboard - ITMS</title>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-        .logout-btn { background: #ef4444; color: white; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; }
-        .logout-btn:hover { background: #dc2626; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .nav-links a {
+            background: #10b981;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .nav-links a.logout-btn {
+            background: #ef4444;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: #f1f5f9;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            border-top: 4px solid #10b981;
+            min-width: 250px;
+        }
+
+        .card.alt {
+            border-top-color: #3b82f6;
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        .card .num {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin-top: 10px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <h2>Faculty Dashboard</h2>
-            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            <h2>Faculty Portal</h2>
+            <div class="nav-links">
+                <a href="{{ url_for('faculty_internships') }}">Internships</a>
+                <a href="{{ url_for('faculty_applications') }}">Student Applications</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+            </div>
         </div>
-        <p>Welcome to your Faculty Portal! Your content will appear here.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div style="padding: 10px; margin-bottom: 15px; border-radius: 5px; background: #fee2e2; color: #991b1b;">{{
+            message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <h3>Your Assigned Metrics</h3>
+        <p>Monitor the performance and traction of your designated system assets below.</p>
+        <div class="grid">
+            <div class="card">
+                <h3>Monitored Internships</h3>
+                <div class="num">{{ stats.internships }}</div>
+            </div>
+            <div class="card alt">
+                <h3>Total Pending Profiles</h3>
+                <div class="num">{{ stats.applications }}</div>
+            </div>
+        </div>
     </div>
 </body>
+
 </html>
