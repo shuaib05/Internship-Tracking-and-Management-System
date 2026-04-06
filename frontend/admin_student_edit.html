@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Edit Student - ITMS{% endblock %}
+{% block content %}
+<div class="header">
+    <h2>Edit Student: {{ student.Name }}</h2>
+    <a href="{{ url_for('admin_students') }}" class="btn btn-secondary">Back to Students</a>
+</div>
+
+<div class="card">
+    <form method="POST" action="{{ url_for('admin_student_edit', id=student.StudentID) }}">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ student.Name }}" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ student.Email }}" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone" value="{{ student.Phone }}">
+        </div>
+        <div class="form-group">
+            <label for="department_id">Department</label>
+            <select id="department_id" name="department_id" required>
+                {% for dept in departments %}
+                <option value="{{ dept.DepartmentID }}" {% if student.DepartmentID == dept.DepartmentID %}selected{% endif %}>{{ dept.DepartmentName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Student</button>
+    </form>
+</div>
+{% endblock %}

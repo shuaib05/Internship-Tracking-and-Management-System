@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Manage Faculty - ITMS{% endblock %}
+{% block content %}
+<div class="header">
+    <h2>Manage Faculty</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+<div class="card">
+    <h3>Add New Faculty</h3>
+    <form method="POST" action="{{ url_for('admin_faculty') }}">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Faculty</button>
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in faculty %}
+            <tr>
+                <td>{{ f.FacultyID }}</td>
+                <td><strong>{{ f.FacultyName }}</strong></td>
+                <td>{{ f.FacultyEmail }}</td>
+                <td>
+                    <a href="{{ url_for('admin_faculty_edit', id=f.FacultyID) }}" class="btn btn-secondary btn-sm">Edit</a>
+                    <form method="POST" action="{{ url_for('admin_faculty_delete', id=f.FacultyID) }}" style="display:inline;" onsubmit="return confirm('Warning: Deleting this faculty member will unassign them from their internships. The internships will remain, but will have no assigned faculty. Are you sure you want to proceed?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4">No faculty found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

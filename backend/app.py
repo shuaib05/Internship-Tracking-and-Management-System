@@ -469,11 +469,38 @@ def admin_internship_delete(id):
         flash(f'Database error: {str(e)}', 'error')
     return redirect(url_for('admin_internships'))
 
-@app.route('/admin/students')
+@app.route('/admin/students', methods=['GET', 'POST'])
 @role_required('admin')
 def admin_students():
     try:
         conn = get_db_connection()
+        if request.method == 'POST':
+            name = request.form.get('name')
+            email = request.form.get('email')
+            phone = request.form.get('phone')
+            department_id = request.form.get('department_id')
+            
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO Student (Name, Email, Phone, DepartmentID)
+                    VALUES (%s, %s, %s, %s)
+                """, (name, email, phone, department_id))
+                student_id = cursor.lastrowid
+                
+                # Default username: firstname_firstletteroflastname all lowercase
+                name_parts = name.strip().split()
+                if len(name_parts) >= 2:
+                    username = f"{name_parts[0].lower()}_{name_parts[-1][0].lower()}"
+                else:
+                    username = name_parts[0].lower()
+                cursor.execute("""
+                    INSERT INTO Users (Username, Password, Role, RefID)
+                    VALUES (%s, 'password', 'student', %s)
+                """, (username, student_id))
+            conn.commit()
+            flash('Student added successfully!', 'success')
+            return redirect(url_for('admin_students'))
+
         with conn.cursor() as cursor:
             cursor.execute("""
                 SELECT s.*, d.DepartmentName 
@@ -481,11 +508,144 @@ def admin_students():
                 LEFT JOIN Department d ON s.DepartmentID = d.DepartmentID
             """)
             students = cursor.fetchall()
+            cursor.execute("SELECT * FROM Department")
+            departments = cursor.fetchall()
         conn.close()
-        return render_template('admin_students.html', students=students)
+        return render_template('admin_students.html', students=students, departments=departments)
     except Exception as e:
         flash(f'Database error: {str(e)}', 'error')
         return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/students/edit/<int:id>', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_student_edit(id):
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            name = request.form.get('name')
+            email = request.form.get('email')
+            phone = request.form.get('phone')
+            department_id = request.form.get('department_id')
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE Student SET Name=%s, Email=%s, Phone=%s, DepartmentID=%s 
+                    WHERE StudentID=%s
+                """, (name, email, phone, department_id, id))
+            conn.commit()
+            flash('Student updated successfully!', 'success')
+            return redirect(url_for('admin_students'))
+            
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Student WHERE StudentID=%s", (id,))
+            student = cursor.fetchone()
+            cursor.execute("SELECT * FROM Department")
+            departments = cursor.fetchall()
+        conn.close()
+        if not student:
+            flash('Student not found', 'error')
+            return redirect(url_for('admin_students'))
+        return render_template('admin_student_edit.html', student=student, departments=departments)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_students'))
+
+@app.route('/admin/students/delete/<int:id>', methods=['POST'])
+@role_required('admin')
+def admin_student_delete(id):
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM Users WHERE Role='student' AND RefID=%s", (id,))
+            cursor.execute("DELETE FROM Student WHERE StudentID=%s", (id,))
+        conn.commit()
+        conn.close()
+        flash('Student deleted successfully!', 'success')
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    return redirect(url_for('admin_students'))
+
+@app.route('/admin/faculty', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_faculty():
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            name = request.form.get('name')
+            email = request.form.get('email')
+            
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO Faculty (FacultyName, FacultyEmail)
+                    VALUES (%s, %s)
+                """, (name, email))
+                faculty_id = cursor.lastrowid
+                
+                # Default username: firstname_firstletteroflastname all lowercase
+                name_parts = name.strip().split()
+                if len(name_parts) >= 2:
+                    username = f"{name_parts[0].lower()}_{name_parts[-1][0].lower()}"
+                else:
+                    username = name_parts[0].lower()
+                cursor.execute("""
+                    INSERT INTO Users (Username, Password, Role, RefID)
+                    VALUES (%s, 'password', 'faculty', %s)
+                """, (username, faculty_id))
+            conn.commit()
+            flash('Faculty added successfully!', 'success')
+            return redirect(url_for('admin_faculty'))
+
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Faculty")
+            faculty = cursor.fetchall()
+        conn.close()
+        return render_template('admin_faculty.html', faculty=faculty)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/faculty/edit/<int:id>', methods=['GET', 'POST'])
+@role_required('admin')
+def admin_faculty_edit(id):
+    try:
+        conn = get_db_connection()
+        if request.method == 'POST':
+            name = request.form.get('name')
+            email = request.form.get('email')
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE Faculty SET FacultyName=%s, FacultyEmail=%s 
+                    WHERE FacultyID=%s
+                """, (name, email, id))
+            conn.commit()
+            flash('Faculty updated successfully!', 'success')
+            return redirect(url_for('admin_faculty'))
+            
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Faculty WHERE FacultyID=%s", (id,))
+            faculty = cursor.fetchone()
+        conn.close()
+        if not faculty:
+            flash('Faculty not found', 'error')
+            return redirect(url_for('admin_faculty'))
+        return render_template('admin_faculty_edit.html', faculty=faculty)
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+        return redirect(url_for('admin_faculty'))
+
+@app.route('/admin/faculty/delete/<int:id>', methods=['POST'])
+@role_required('admin')
+def admin_faculty_delete(id):
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM Users WHERE Role='faculty' AND RefID=%s", (id,))
+            cursor.execute("DELETE FROM Faculty WHERE FacultyID=%s", (id,))
+        conn.commit()
+        conn.close()
+        flash('Faculty deleted successfully!', 'success')
+    except Exception as e:
+        flash(f'Database error: {str(e)}', 'error')
+    return redirect(url_for('admin_faculty'))
 
 @app.route('/admin/applications')
 @role_required('admin')

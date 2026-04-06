@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Edit Faculty - ITMS{% endblock %}
+{% block content %}
+<div class="header">
+    <h2>Edit Faculty: {{ faculty.FacultyName }}</h2>
+    <a href="{{ url_for('admin_faculty') }}" class="btn btn-secondary">Back to Faculty List</a>
+</div>
+
+<div class="card">
+    <form method="POST" action="{{ url_for('admin_faculty_edit', id=faculty.FacultyID) }}">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ faculty.FacultyName }}" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" value="{{ faculty.FacultyEmail }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Faculty</button>
+    </form>
+</div>
+{% endblock %}

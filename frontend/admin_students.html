@@ -6,6 +6,34 @@
     <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
 
+<div class="card">
+    <h3>Add New Student</h3>
+    <form method="POST" action="{{ url_for('admin_students') }}">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="text" id="phone" name="phone">
+        </div>
+        <div class="form-group">
+            <label for="department_id">Department</label>
+            <select id="department_id" name="department_id" required>
+                <option value="">Select Department</option>
+                {% for dept in departments %}
+                <option value="{{ dept.DepartmentID }}">{{ dept.DepartmentName }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Student</button>
+    </form>
+</div>
+
 <div class="table-responsive">
     <table>
         <thead>
@@ -15,6 +43,7 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Department</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -25,9 +54,15 @@
                 <td>{{ student.Email }}</td>
                 <td>{{ student.Phone }}</td>
                 <td>{{ student.DepartmentName }}</td>
+                <td>
+                    <a href="{{ url_for('admin_student_edit', id=student.StudentID) }}" class="btn btn-secondary btn-sm">Edit</a>
+                    <form method="POST" action="{{ url_for('admin_student_delete', id=student.StudentID) }}" style="display:inline;" onsubmit="return confirm('Warning: Deleting this student will also permanently delete all of their internship applications. Are you sure you want to proceed?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="5">No students found.</td></tr>
+            <tr><td colspan="6">No students found.</td></tr>
             {% endfor %}
         </tbody>
     </table>
